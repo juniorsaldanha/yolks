@@ -1,0 +1,35 @@
+# OS X
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dependencies
+node_modules/
+deno.lock
+
+# Docker
+.Dockerfile.*
+docker-*/
+image*.tar
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Pterodactyl specific
+**/*.backup.json
+**/*backup.json
+.DS_Store
