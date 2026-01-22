@@ -25,10 +25,10 @@ games/
 ```
 
 ## Building & Publishing
-GitHub Actions auto-builds/pushes multi-platform (amd64/arm64) images to GHCR on `master` pushes/tags.
+GitHub Actions auto-builds/pushes multi-platform (amd64/arm64) images to GHCR on `main` pushes/tags.
 
 **Image tags**:
-- `:latest`, `:master`, `:short-sha`
+- `:latest`, `:main`, `:short-sha`
 - On tags: `:vX.Y.Z`
 
 **Image format**: `ghcr.io/juniorsaldanha/yolks/{game}:{tag}`
@@ -71,10 +71,10 @@ games/
 ```
 
 ## Building & Publishing
-GitHub Actions auto-builds/pushes multi-platform (amd64/arm64) images to GHCR on `master` pushes/tags.
+GitHub Actions auto-builds/pushes multi-platform (amd64/arm64) images to GHCR on `main` pushes/tags.
 
 **Image tags**:
-- `:latest`, `:master`, `:short-sha`
+- `:latest`, `:main`, `:short-sha`
 - On tags: `:vX.Y.Z`
 
 Local build:
