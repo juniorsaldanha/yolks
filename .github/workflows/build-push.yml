@@ -27,7 +27,7 @@ jobs:
             GAMES+=("$(basename "$d")")
           fi
         done
-        GAMES_JSON=$(printf '%s' "${GAMES[@]}" | jq -Rs 'split("\n") | map(select(length > 0))')
+        GAMES_JSON=$(printf '%s\n' "${GAMES[@]}" | jq -sR 'split("\n")[:-1]')
         echo "games=$GAMES_JSON" >> $GITHUB_OUTPUT
         echo "Found games: $GAMES_JSON"
 
