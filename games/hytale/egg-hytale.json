@@ -5,7 +5,7 @@
     },
     "exported_at": "2026-01-22T00:00:00+00:00",
     "name": "Hytale",
-    "author": "your-email@example.com",
+    "author": "umsaldanha@gmail.com",
     "description": "Hytale dedicated server with fixed OAuth authentication visibility and proper file permissions.\n\nFixes:\n- OAuth URL now visible in Pterodactyl console\n- Credentials file permission issue resolved\n\nCredits: Based on official pterodactyl/yolks hytale image",
     "features": [
         "java_version"
