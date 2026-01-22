@@ -19,17 +19,17 @@ jobs:
         fetch-depth: 0
 
     - name: List games with Dockerfiles
-  id: list-games
-  run: |
-    GAMES=()
-    for d in games/*/; do
-      if [[ -f "$d/Dockerfile" ]]; then
-        GAMES+=("$(basename "$d")")
-      fi
-    done
-    GAMES_JSON=$(printf '%s\n' "${GAMES[@]}" | jq -sR .)
-    echo "games=${GAMES_JSON}" >> $GITHUB_OUTPUT
-    echo "Found games: ${GAMES_JSON}"
+      id: list-games
+      run: |
+        GAMES=()
+        for d in games/*/; do
+          if [[ -f "$d/Dockerfile" ]]; then
+            GAMES+=("$(basename "$d")")
+          fi
+        done
+        GAMES_JSON=$(printf '%s\n' "${GAMES[@]}" | jq -sR .)
+        echo "games=${GAMES_JSON}" >> $GITHUB_OUTPUT
+        echo "Found games: ${GAMES_JSON}"
 
   build-and-push:
     needs: list-games
