@@ -28,8 +28,10 @@ jobs:
           fi
         done
         GAMES_JSON=$(printf '%s\n' "${GAMES[@]}" | jq -sR .)
-        echo "games=${GAMES_JSON}" >> $GITHUB_OUTPUT
-        echo "Found games: ${GAMES_JSON}"
+        echo "games<<JSON" >> $GITHUB_OUTPUT
+        echo "$GAMES_JSON" >> $GITHUB_OUTPUT
+        echo "JSON>>" >> $GITHUB_OUTPUT
+        echo "Found games: $GAMES_JSON"
 
   build-and-push:
     needs: list-games
