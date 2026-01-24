@@ -10,15 +10,22 @@ USER root
 COPY --from=ghcr.io/pterodactyl/yolks:java_25 entrypoint.sh /java.sh
 RUN chmod +x /java.sh
 
-RUN apt-get update -y \
-    && apt-get install -y unzip jq coreutils \
-    && rm -rf /var/lib/apt/lists/*
+# Install required packages using apk (Alpine package manager)
+RUN apk add --no-cache \
+    unzip \
+    jq \
+    coreutils \
+    bash
 
-# Fix permissions: Ensure the container user can write to /home/container
-# This is critical for the hytale-downloader to save credentials
-RUN mkdir -p /home/container \
+# Create directory structure
+# /opt/hytale - System files (hidden from users)
+# /home/container - User files only
+RUN mkdir -p /opt/hytale/bin \
+    && mkdir -p /opt/hytale/assets \
+    && mkdir -p /home/container/Server \
     && chown -R container:container /home/container \
-    && chmod 755 /home/container
+    && chmod 755 /home/container \
+    && chmod 755 /opt/hytale
 
 # Create a wrapper script for the hytale-downloader that uses unbuffered output
 COPY ./entrypoint.sh /entrypoint.sh
