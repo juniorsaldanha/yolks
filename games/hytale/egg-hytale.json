@@ -11,7 +11,8 @@
         "java_version"
     ],
     "docker_images": {
-        "Production": "ghcr.io/juniorsaldanha/yolks/hytale:latest"
+        "Production": "ghcr.io/juniorsaldanha/yolks/hytale:latest",
+        "Development": "ghcr.io/juniorsaldanha/yolks/hytale:dev"
     },
     "file_denylist": [],
     "startup": "java $( ((USE_AOT_CACHE)) && printf %s \"-XX:AOTCache=HytaleServer.aot\" ) -Xms128M $( ((SERVER_MEMORY)) && printf %s \"-Xmx${SERVER_MEMORY}M\" ) -jar /opt/hytale/assets/Server/HytaleServer.jar $( ((HYTALE_ALLOW_OP)) && printf %s \"--allow-op\" ) $( ((HYTALE_ACCEPT_EARLY_PLUGINS)) && printf %s \"--accept-early-plugins\" ) $( ((DISABLE_SENTRY)) && printf %s \"--disable-sentry\" ) --auth-mode ${HYTALE_AUTH_MODE} --assets /opt/hytale/assets/Assets.zip --bind 0.0.0.0:${SERVER_PORT}",
