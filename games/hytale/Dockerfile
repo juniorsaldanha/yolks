@@ -10,12 +10,14 @@ USER root
 COPY --from=ghcr.io/pterodactyl/yolks:java_25 entrypoint.sh /java.sh
 RUN chmod +x /java.sh
 
-# Install required packages using apk (Alpine package manager)
-RUN apk add --no-cache \
+# Install required packages using apt (Debian package manager)
+RUN apt-get update \
+    && apt-get install -y \
     unzip \
     jq \
     coreutils \
-    bash
+    bash \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create directory structure
 # /opt/hytale - System files (hidden from users)
