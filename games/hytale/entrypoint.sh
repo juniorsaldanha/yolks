@@ -5,6 +5,10 @@ cd /home/container
 # Ensure HOME is properly set and writable
 export HOME=/home/container
 
+# Set environment variables early to ensure tools like unzip usage correct timezone
+TZ=${TZ:-UTC}
+export TZ
+
 # The hytale-downloader writes credentials to $HOME/.hytale-downloader-credentials.json
 CREDENTIALS_FILE="$HOME/.hytale-downloader-credentials.json"
 
@@ -158,7 +162,18 @@ if [[ -z "$HYTALE_SERVER_SESSION_TOKEN" ]]; then
             fi
 
             echo "Download completed. Extracting..."
-            unzip -o HytaleServer.zip -d assets
+            
+            # Robust extraction: Use 'jar' if available (better for Java archives), else unzip
+            mkdir -p assets
+            cd assets
+            if command -v jar >/dev/null 2>&1; then
+                # jar extracts to current dir, preserves timestamps well
+                jar xf ../HytaleServer.zip
+            else
+                # Fallback to unzip
+                unzip -o ../HytaleServer.zip
+            fi
+            cd ..
             rm -f HytaleServer.zip
             
             # Only update version file if we actually got a clean version
@@ -228,8 +243,7 @@ echo "Starting Hytale server..."
 echo ""
 
 # Set environment variables
-TZ=${TZ:-UTC}
-export TZ
+
 INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
 export INTERNAL_IP
 
