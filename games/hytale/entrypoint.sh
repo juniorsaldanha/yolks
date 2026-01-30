@@ -17,6 +17,12 @@ if ! touch "$HOME/.test_write" 2>/dev/null; then
 fi
 rm -f "$HOME/.test_write"
 
+# Initialize .pteroignore if present in image
+if [[ -f "/pteroignore" ]] && [[ ! -f ".pteroignore" ]]; then
+    echo "Initializing .pteroignore..."
+    cp /pteroignore .pteroignore
+fi
+
 # System files location (Hidden in .hytale directory)
 HYTALE_SYS_DIR="/home/container/.hytale"
 HYTALE_BIN="$HYTALE_SYS_DIR/bin"

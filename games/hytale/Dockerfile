@@ -32,6 +32,7 @@ RUN mkdir -p /opt/hytale/bin \
 
 # Create a wrapper script for the hytale-downloader that uses unbuffered output
 COPY ./entrypoint.sh /entrypoint.sh
+COPY .pteroignore /pteroignore
 RUN chmod +x /entrypoint.sh
 
 USER container
