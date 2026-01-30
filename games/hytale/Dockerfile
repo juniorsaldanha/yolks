@@ -1,9 +1,9 @@
 FROM  --platform=$TARGETOS/$TARGETARCH ghcr.io/pterodactyl/yolks:java_25
 
 LABEL author="Junior Saldanha" maintainer="umsaldanha@gmail.com"
-
 LABEL org.opencontainers.image.source="https://github.com/juniorsaldanha/yolks"
 LABEL org.opencontainers.image.licenses=MIT
+LABEL org.opencontainers.image.description="Hytale dedicated server."
 
 USER root
 
@@ -17,6 +17,7 @@ RUN apt-get update \
     jq \
     coreutils \
     bash \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create directory structure
@@ -31,6 +32,7 @@ RUN mkdir -p /opt/hytale/bin \
 
 # Create a wrapper script for the hytale-downloader that uses unbuffered output
 COPY ./entrypoint.sh /entrypoint.sh
+COPY .pteroignore /pteroignore
 RUN chmod +x /entrypoint.sh
 
 USER container

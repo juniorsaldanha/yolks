@@ -1,0 +1,5 @@
+.hytale/
+Server/*
+!Server/auth.enc
+!Server/*.json
+!Server/universe/

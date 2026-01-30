@@ -6,7 +6,7 @@
     "exported_at": "2026-01-22T00:00:00+00:00",
     "name": "Hytale",
     "author": "umsaldanha@gmail.com",
-    "description": "Hytale dedicated server with fixed OAuth authentication visibility and proper file permissions.\n\nFixes:\n- OAuth URL now visible in Pterodactyl console\n- Credentials file permission issue resolved\n\nCredits: Based on official pterodactyl/yolks hytale image",
+    "description": "Hytale dedicated server with fixed OAuth authentication visibility and proper file permissions.\n\nCredits: Based on official pterodactyl/yolks hytale image",
     "features": [
         "java_version"
     ],
@@ -15,7 +15,7 @@
         "Development": "ghcr.io/juniorsaldanha/yolks/hytale:develop"
     },
     "file_denylist": [],
-    "startup": "java $( ((USE_AOT_CACHE)) && printf %s \"-XX:AOTCache=HytaleServer.aot\" ) -Xms128M $( ((SERVER_MEMORY)) && printf %s \"-Xmx${SERVER_MEMORY}M\" ) -jar /opt/hytale/assets/Server/HytaleServer.jar $( ((HYTALE_ALLOW_OP)) && printf %s \"--allow-op\" ) $( ((HYTALE_ACCEPT_EARLY_PLUGINS)) && printf %s \"--accept-early-plugins\" ) $( ((DISABLE_SENTRY)) && printf %s \"--disable-sentry\" ) --auth-mode ${HYTALE_AUTH_MODE} --assets /opt/hytale/assets/Assets.zip --bind 0.0.0.0:${SERVER_PORT}",
+    "startup": "java -XX:AOTCache=HytaleServer.aot -jar HytaleServer.jar $( ((HYTALE_ALLOW_OP)) && printf %s \"--allow-op\" ) $( ((HYTALE_ACCEPT_EARLY_PLUGINS)) && printf %s \"--accept-early-plugins\" ) $( ((DISABLE_SENTRY)) && printf %s \"--disable-sentry\" ) --auth-mode ${HYTALE_AUTH_MODE} --assets /home/container/.hytale/assets/Assets.zip --bind 0.0.0.0:${SERVER_PORT}",
     "config": {
         "files": "{\r\n    \"Server/config.json\": {\r\n        \"parser\": \"json\",\r\n        \"find\": {\r\n            \"MaxPlayers\": \"{{server.build.env.HYTALE_MAX_PLAYERS}}\",\r\n            \"Password\": \"{{server.build.env.HYTALE_PASSWORD}}\",\r\n            \"MaxViewRadius\": \"{{server.build.env.HYTALE_MAX_VIEW_RADIUS}}\",\r\n            \"Defaults.GameMode\": \"{{server.build.env.HYTALE_GAME_MODE}}\"\r\n        }\r\n    }\r\n}",
         "startup": "{\r\n    \"done\": \"Hytale Server Booted\"\r\n}",
@@ -24,19 +24,39 @@
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/bash\nset -e\n\nDOWNLOAD_URL=\"https://downloader.hytale.com/hytale-downloader.zip\"\nDOWNLOAD_FILE=\"hytale-downloader.zip\"\n\n# Plugin versions\nWEBSERVER_VERSION=\"1.0.0\"\nQUERY_VERSION=\"1.0.1\"\n\necho \"===========================================\"\necho \"  HYTALE SERVER INSTALLATION\"\necho \"===========================================\"\necho \"\"\n\n# Install required dependencies (Alpine)\necho \"Installing dependencies...\"\napk add --no-cache curl unzip jq bash\necho \"\"\n\n# Create directory structure\n# /opt/hytale - System files (hidden from users)\n# /mnt/server - User files only\nmkdir -p /opt/hytale/bin\nmkdir -p /mnt/server/Server\n\ncd /opt/hytale\n\n# Download and install hytale-downloader\necho \"Downloading Hytale Downloader CLI...\"\ncurl -L -o \"${DOWNLOAD_FILE}\" \"${DOWNLOAD_URL}\"\n\nif [ $? -ne 0 ]; then\n    echo \"Error: Failed to download ${DOWNLOAD_URL}\"\n    exit 1\nfi\n\necho \"Extracting ${DOWNLOAD_FILE}...\"\nunzip -o \"${DOWNLOAD_FILE}\"\n\nif [ $? -ne 0 ]; then\n    echo \"Error: Failed to extract ${DOWNLOAD_FILE}\"\n    exit 1\nfi\n\n# Move binaries to bin directory\nmv -f hytale-downloader-linux-amd64 bin/ 2>/dev/null || true\nmv -f hytale-downloader-windows-amd64.exe bin/ 2>/dev/null || true\n\n# Create symlink for compatibility\nln -sf hytale-downloader-linux-amd64 bin/hytale-downloader-linux 2>/dev/null || true\n\nchmod +x bin/hytale-downloader-linux-amd64\nchmod +x bin/hytale-downloader-linux 2>/dev/null || true\n\n# Cleanup\nrm -f \"${DOWNLOAD_FILE}\" QUICKSTART.md\n\n# Verify installation\necho \"\"\necho \"Verifying Hytale Downloader installation...\"\nif [ -x ./bin/hytale-downloader-linux-amd64 ]; then\n    echo \"Hytale Downloader binary found and executable.\"\nelse\n    echo \"ERROR: Hytale Downloader binary not found or not executable!\"\n    exit 1\nfi\n\n# Install Nitrado plugins if Source Query is enabled\nif [ \"${INSTALL_SOURCEQUERY_PLUGIN}\" == \"1\" ]; then\n    echo \"\"\n    echo \"===========================================\"\n    echo \"  INSTALLING NITRADO PLUGINS\"\n    echo \"===========================================\"\n    echo \"\"\n    \n    # Create mods directory in Server (user-visible location)\n    mkdir -p /mnt/server/Server/mods\n    \n    # Download WebServer plugin\n    echo \"Downloading Nitrado WebServer plugin v${WEBSERVER_VERSION}...\"\n    WEBSERVER_URL=\"https://github.com/nitrado/hytale-plugin-webserver/releases/download/v${WEBSERVER_VERSION}/Nitrado_WebServer-${WEBSERVER_VERSION}.jar\"\n    curl -L -o \"/mnt/server/Server/mods/Nitrado_WebServer-${WEBSERVER_VERSION}.jar\" \"${WEBSERVER_URL}\"\n    \n    if [ $? -eq 0 ]; then\n        echo \"\u2713 WebServer plugin downloaded successfully\"\n    else\n        echo \"\u26a0 Warning: Failed to download WebServer plugin from ${WEBSERVER_URL}\"\n    fi\n    \n    # Download Query plugin\n    echo \"Downloading Nitrado Query plugin v${QUERY_VERSION}...\"\n    QUERY_URL=\"https://github.com/nitrado/hytale-plugin-query/releases/download/v${QUERY_VERSION}/Nitrado_Query-${QUERY_VERSION}.jar\"\n    curl -L -o \"/mnt/server/Server/mods/Nitrado_Query-${QUERY_VERSION}.jar\" \"${QUERY_URL}\"\n    \n    if [ $? -eq 0 ]; then\n        echo \"\u2713 Query plugin downloaded successfully\"\n    else\n        echo \"\u26a0 Warning: Failed to download Query plugin from ${QUERY_URL}\"\n    fi\n    \n    # Create WebServer config if QUERY_PORT is set\n    if [ -n \"${QUERY_PORT}\" ]; then\n        echo \"\"\n        echo \"Configuring WebServer plugin to use port ${QUERY_PORT}...\"\n        mkdir -p /mnt/server/Server/mods/Nitrado_WebServer\n        cat > /mnt/server/Server/mods/Nitrado_WebServer/config.json << EOF\n{\n  \"BindHost\": \"0.0.0.0\",\n  \"BindPort\": ${QUERY_PORT}\n}\nEOF\n        echo \"\u2713 WebServer configured to bind on 0.0.0.0:${QUERY_PORT}\"\n    else\n        echo \"\"\n        echo \"\u2139 No QUERY_PORT specified, WebServer will use default port (game port + 3)\"\n    fi\n    \n    echo \"\"\n    echo \"\u2713 Nitrado plugins installed successfully\"\nelse\n    echo \"\"\n    echo \"\u2139 Source Query plugin installation skipped (INSTALL_SOURCEQUERY_PLUGIN=${INSTALL_SOURCEQUERY_PLUGIN})\"\nfi\n\n# Set permissions\n# System files in /opt/hytale are owned by root\n# User files in /mnt/server are owned by container user\nchown -R container:container /mnt/server 2>/dev/null || true\nchmod -R 755 /mnt/server\n\necho \"\"\necho \"===========================================\"\necho \"  INSTALLATION COMPLETE\"\necho \"===========================================\"\necho \"\"\necho \"IMPORTANT: On first start, you will need to authenticate.\"\necho \"Watch the console for the OAuth URL and authorization code.\"\necho \"\"\n",
-            "container": "ghcr.io/pterodactyl/installers:alpine",
+            "script": "#!/bin/bash\nset -e\n\nDOWNLOAD_URL=\"https://downloader.hytale.com/hytale-downloader.zip\"\nDOWNLOAD_FILE=\"hytale-downloader.zip\"\n\necho \"===========================================\"\necho \"  HYTALE SERVER INSTALLATION\"\necho \"===========================================\"\necho \"\"\n\n# Install required dependencies\necho \"Installing dependencies...\"\napt-get update\napt-get install -y curl unzip jq\necho \"\"\n\n# Create persistent directory structure\nmkdir -p /mnt/server/.hytale/bin\nmkdir -p /mnt/server/Server\n\ncd /mnt/server/.hytale\n\n# Download and install hytale-downloader\necho \"Downloading Hytale Downloader CLI...\"\ncurl -L -o \"${DOWNLOAD_FILE}\" \"${DOWNLOAD_URL}\"\n\nif [ $? -ne 0 ]; then\n    echo \"Error: Failed to download ${DOWNLOAD_URL}\"\n    exit 1\nfi\n\necho \"Extracting ${DOWNLOAD_FILE}...\"\nunzip -o \"${DOWNLOAD_FILE}\"\n\nif [ $? -ne 0 ]; then\n    echo \"Error: Failed to extract ${DOWNLOAD_FILE}\"\n    exit 1\nfi\n\n# Move binaries to bin directory\nmv -f hytale-downloader-linux-amd64 bin/ 2>/dev/null || true\nmv -f hytale-downloader-windows-amd64.exe bin/ 2>/dev/null || true\n\n# Create symlink for compatibility\nln -sf hytale-downloader-linux-amd64 bin/hytale-downloader-linux 2>/dev/null || true\n\nchmod +x bin/hytale-downloader-linux-amd64\nchmod +x bin/hytale-downloader-linux 2>/dev/null || true\n\n# Cleanup\nrm -f \"${DOWNLOAD_FILE}\" QUICKSTART.md\n\n# Verify installation\necho \"\"\necho \"Verifying Hytale Downloader installation...\"\nif [ -x ./bin/hytale-downloader-linux-amd64 ]; then\n    echo \"Hytale Downloader binary found and executable.\"\nelse\n    echo \"ERROR: Hytale Downloader binary not found or not executable!\"\n    exit 1\nfi\n\n# Set permissions\n# Validating if we can change ownership, otherwise skipping\nchown -R container:container /mnt/server 2>/dev/null || echo \"Warning: Failed to chown /mnt/server (ignoring)\"\nchmod -R 755 /mnt/server\n\n# Download the latest hytale-sourcequery plugin if enabled\nif [ \"${INSTALL_SOURCEQUERY_PLUGIN}\" == \"1\" ]; then\n    cd /mnt/server\n    mkdir -p Server/mods\n    echo -e \"Downloading latest hytale-sourcequery plugin...\"\n    LATEST_JSON=$(curl -sSL https://api.github.com/repos/physgun-com/hytale-sourcequery/releases/latest || echo \"{}\")\n    LATEST_URL=$(echo \"$LATEST_JSON\" | jq -r '.assets[] | select(.name | endswith(\".jar\")) | .browser_download_url' | head -n 1)\n    \n    if [[ -n \"$LATEST_URL\" ]] && [[ \"$LATEST_URL\" != \"null\" ]]; then\n        curl -sSL -o Server/mods/hytale-sourcequery.jar \"$LATEST_URL\"\n        echo -e \"Successfully downloaded hytale-sourcequery plugin to Server/mods folder.\"\n        chown -R container:container Server/mods 2>/dev/null || true\n        chmod -R 755 Server/mods\n    else\n        echo -e \"Warning: Could not find hytale-sourcequery plugin download URL.\"\n        echo -e \"Response: $LATEST_JSON\"\n    fi\nfi\n\necho \"\"\necho \"===========================================\"\necho \"  INSTALLATION COMPLETE\"\necho \"===========================================\"\necho \"\"\necho \"IMPORTANT: On first start, you will need to authenticate.\"\necho \"Watch the console for the OAuth URL and authorization code.\"\necho \"\"\n",
+            "container": "ghcr.io/pterodactyl/installers:debian",
             "entrypoint": "bash"
         }
     },
     "variables": [
         {
+            "name": "Query Port",
+            "description": "Port for the Source Query functionality. If left empty, it will default to Server Port + 1.",
+            "env_variable": "QUERY_PORT",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|integer",
+            "field_type": "text"
+        },
+        {
+            "name": "Install Source Query Plugin",
+            "description": "Enables the built-in Source Query functionality.",
+            "env_variable": "INSTALL_SOURCEQUERY_PLUGIN",
+            "default_value": "1",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
             "name": "Accept Early Plugins",
             "description": "Hytale warns that loading early plugins is unsupported and may cause stability issues.",
             "env_variable": "HYTALE_ACCEPT_EARLY_PLUGINS",
             "default_value": "0",
-            "user_viewable": true,
-            "user_editable": true,
+            "user_viewable": false,
+            "user_editable": false,
             "rules": "required|boolean",
             "field_type": "text"
         },
@@ -64,16 +84,16 @@
             "name": "Disable Sentry",
             "description": "Hytale uses Sentry to track crashes. Disable Sentry during active plugin development.",
             "env_variable": "DISABLE_SENTRY",
-            "default_value": "0",
-            "user_viewable": true,
-            "user_editable": true,
+            "default_value": "1",
+            "user_viewable": false,
+            "user_editable": false,
             "rules": "required|boolean",
             "field_type": "text"
         },
         {
-            "name": "Use Ahead-of-Time Cache",
-            "description": "Hytale provides a pre-trained AOT Java cache which can significantly improve boot times.",
-            "env_variable": "USE_AOT_CACHE",
+            "name": "Auto Update",
+            "description": "If set to 1, the server will check for updates on startup. Set to 0 to disable auto-updates.",
+            "env_variable": "AUTO_UPDATE",
             "default_value": "1",
             "user_viewable": true,
             "user_editable": true,
@@ -91,26 +111,6 @@
             "field_type": "text"
         },
         {
-            "name": "Install Source Query Plugin",
-            "description": "Installs the Source Query plugin, so that your server responds to Source Query A2S requests (player count, server name, etc.)",
-            "env_variable": "INSTALL_SOURCEQUERY_PLUGIN",
-            "default_value": "1",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|boolean",
-            "field_type": "text"
-        },
-        {
-            "name": "Source Query Port",
-            "description": "The port that the Source Query plugin will use to respond to A2S requests. This should be different from the main server port. Defaults to the game port + 1.",
-            "env_variable": "QUERY_PORT",
-            "default_value": "",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "nullable|integer|between:1,65535",
-            "field_type": "text"
-        },
-        {
             "name": "Server Session Token",
             "description": "Optional: Pre-configured session token for GSP providers. Leave empty for OAuth authentication.",
             "env_variable": "HYTALE_SERVER_SESSION_TOKEN",
@@ -124,10 +124,10 @@
             "name": "Max View Radius",
             "description": "Maximum view radius for players.",
             "env_variable": "HYTALE_MAX_VIEW_RADIUS",
-            "default_value": "",
+            "default_value": "8",
             "user_viewable": true,
-            "user_editable": true,
-            "rules": "nullable|integer",
+            "user_editable": false,
+            "rules": "required|integer",
             "field_type": "text"
         },
         {
