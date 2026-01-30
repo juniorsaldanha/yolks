@@ -5,10 +5,6 @@ cd /home/container
 # Ensure HOME is properly set and writable
 export HOME=/home/container
 
-# Set environment variables early to ensure tools like unzip usage correct timezone
-TZ=${TZ:-UTC}
-export TZ
-
 # The hytale-downloader writes credentials to $HOME/.hytale-downloader-credentials.json
 CREDENTIALS_FILE="$HOME/.hytale-downloader-credentials.json"
 
@@ -168,10 +164,11 @@ if [[ -z "$HYTALE_SERVER_SESSION_TOKEN" ]]; then
             cd assets
             if command -v jar >/dev/null 2>&1; then
                 # jar extracts to current dir, preserves timestamps well
-                jar xf ../HytaleServer.zip
+                # Force UTC for extraction to match AOT generation environment
+                TZ=UTC jar xf ../HytaleServer.zip
             else
                 # Fallback to unzip
-                unzip -o ../HytaleServer.zip
+                TZ=UTC unzip -o ../HytaleServer.zip
             fi
             cd ..
             rm -f HytaleServer.zip
@@ -260,6 +257,10 @@ fi
 
 # Change to Server directory
 cd /home/container/Server
+
+# Symlink system jar/aot to current directory to conform to AOT classpath expectations
+ln -sf "$HYTALE_ASSETS/Server/HytaleServer.jar" HytaleServer.jar
+ln -sf "$HYTALE_ASSETS/Server/HytaleServer.aot" HytaleServer.aot
 
 # Print Java version
 printf "\033[1m\033[33mcontainer@pterodactyl~ \033[0mjava -version\n"

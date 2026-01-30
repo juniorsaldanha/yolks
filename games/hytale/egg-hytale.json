@@ -15,7 +15,7 @@
         "Development": "ghcr.io/juniorsaldanha/yolks/hytale:develop"
     },
     "file_denylist": [],
-    "startup": "java -XX:AOTCache=/home/container/.hytale/assets/Server/HytaleServer.aot -jar /home/container/.hytale/assets/Server/HytaleServer.jar $( ((HYTALE_ALLOW_OP)) && printf %s \"--allow-op\" ) $( ((HYTALE_ACCEPT_EARLY_PLUGINS)) && printf %s \"--accept-early-plugins\" ) $( ((DISABLE_SENTRY)) && printf %s \"--disable-sentry\" ) --auth-mode ${HYTALE_AUTH_MODE} --assets /home/container/.hytale/assets/Assets.zip --bind 0.0.0.0:${SERVER_PORT}",
+    "startup": "java -XX:AOTCache=HytaleServer.aot -jar HytaleServer.jar $( ((HYTALE_ALLOW_OP)) && printf %s \"--allow-op\" ) $( ((HYTALE_ACCEPT_EARLY_PLUGINS)) && printf %s \"--accept-early-plugins\" ) $( ((DISABLE_SENTRY)) && printf %s \"--disable-sentry\" ) --auth-mode ${HYTALE_AUTH_MODE} --assets /home/container/.hytale/assets/Assets.zip --bind 0.0.0.0:${SERVER_PORT}",
     "config": {
         "files": "{\r\n    \"Server/config.json\": {\r\n        \"parser\": \"json\",\r\n        \"find\": {\r\n            \"MaxPlayers\": \"{{server.build.env.HYTALE_MAX_PLAYERS}}\",\r\n            \"Password\": \"{{server.build.env.HYTALE_PASSWORD}}\",\r\n            \"MaxViewRadius\": \"{{server.build.env.HYTALE_MAX_VIEW_RADIUS}}\",\r\n            \"Defaults.GameMode\": \"{{server.build.env.HYTALE_GAME_MODE}}\"\r\n        }\r\n    }\r\n}",
         "startup": "{\r\n    \"done\": \"Hytale Server Booted\"\r\n}",
